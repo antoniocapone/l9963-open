@@ -20,6 +20,7 @@
 #endif  //L9963_DEBUG
 
 #define L9963_T_WAKEUP_MS 2 /* Time needed for the wakeup procedure (ms) */
+#define L9963_TOTAL_CELLS 14 /* All available device cells number */
 
 typedef struct {
     L9963_Driver_Handle drv_handle;
@@ -66,6 +67,13 @@ typedef enum {
 	_2048MS = 0b11
 } L9963_CommTimeoutEnum;
 
+typedef enum {
+	L9963_FSM_Sleep 		= 0b0001,
+	L9963_FSM_Init			= 0b0010,
+	L9963_FSM_Normal 		= 0b0100,
+	L9963_FSM_CyclicWakeUp 	= 0b1000
+} L9963_FSM_Status;
+
 /**
  * @brief Perform initialization of the high level driver.
  * @param[in] handle: pointer to device handler structure
@@ -90,7 +98,43 @@ L9963_Status L9963_SetDevID(L9963_Handle *handle, uint8_t dev_id);
  * @param[in] dev_id: 5-bit long device address
  * @retval L9963_OK if no error occurs, L9963_NOT_OK otherwise
  */
-L9963_Status L9963_setCommTimeout(L9963_Handle *handle, L9963_CommTimeoutEnum commTimeout, uint8_t dev_id);
+L9963_Status L9963_SetCommTimeout(L9963_Handle *handle, L9963_CommTimeoutEnum commTimeout, uint8_t dev_id);
+
+/**
+ * @brief Perform the FSMstatus read from the FSM register.
+ * @param[in] handle: pointer to device handler structure
+ * @param[in] dev_id: 5-bit long device address
+ * @param[out] status: the readed status
+ * @retval L9963_OK if no error occurs, L9963_NOT_OK otherwise
+ */
+L9963_Status L9963_GetFsmStatus(L9963_Handle *handle, uint8_t dev_id, L9963_FSM_Status *status);
+
+/**
+ * @brief Perform the device software reset.
+ * @param[in] handle: pointer to device handler structure
+ * @param[in] dev_id: 5-bit long device address
+ * @retval L9963_OK if no error occurs, L9963_NOT_OK otherwise
+ * @note Do not use this function
+ */
+L9963_Status L9963_SoftwareReset(L9963_Handle *handle, uint8_t dev_id);
+
+/**
+ * @brief Moves the device's status to the SLEEP status.
+ * @param[in] handle: pointer to device handler structure
+ * @param[in] dev_id: 5-bit long device address
+ * @retval L9963_OK if no error occurs, L9963_NOT_OK otherwise
+ * @note Do not use this function
+ */
+L9963_Status L9963_GoToSleep(L9963_Handle *handle, uint8_t dev_id);
+
+/**
+ * @brief Enables the specified cells.
+ * @param[in] handle: pointer to device handler structure
+ * @param[in] dev_id: 5-bit long device address
+ * @param[in] en_cells_mask: 14-bit long binary mask that indicates cells (bit set) to enable
+ * @retval L9963_OK if no error occurs, L9963_NOT_OK otherwise
+ */
+L9963_Status L9963_SetEnabledCells(L9963_Handle *handle, uint8_t dev_id, uint16_t en_cells_mask);
 
 // L9963_Status L9963_set_enabled_cells(L9963_Handle *handle, uint8_t device, uint16_t cells);
 

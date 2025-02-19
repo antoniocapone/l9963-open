@@ -43,7 +43,7 @@ L9963_Status L9963_SetDevID(L9963_Handle* handle, uint8_t dev_id) {
 	return status;
 }
 
-L9963_Status L9963_setCommTimeout(L9963_Handle* handle, L9963_CommTimeoutEnum commTimeout, uint8_t dev_id) {
+L9963_Status L9963_SetCommTimeout(L9963_Handle* handle, L9963_CommTimeoutEnum commTimeout, uint8_t dev_id) {
 	L9963_Status status = L9963_OK;
 	L9963_RegisterUnion fastch_baluv_reg;
 
@@ -62,6 +62,114 @@ L9963_Status L9963_setCommTimeout(L9963_Handle* handle, L9963_CommTimeoutEnum co
 	if (status != L9963_OK) {
 		return status;
 	}
+
+	return status;
+}
+
+L9963_Status L9963_GetFsmStatus(L9963_Handle* handle, uint8_t dev_id, L9963_FSM_Status* status) {
+	L9963_Status ret = L9963_OK;
+	L9963_RegisterUnion fsm_reg;
+
+	ret = L9963_Driver_RegisterRead(&handle->drv_handle, dev_id, L9963_FSM_ADDR, &fsm_reg, 50);
+	if (ret != L9963_OK) {
+		return ret;
+	}
+
+	*status = (L9963_FSM_Status)fsm_reg.FSM.FSMstatus;
+
+	return ret;
+}
+
+L9963_Status L9963_SoftwareReset(L9963_Handle* handle, uint8_t dev_id) {
+	L9963_Status ret = L9963_OK;
+	L9963_RegisterUnion fsm_reg;
+
+	ret = L9963_Driver_RegisterRead(&handle->drv_handle, dev_id, L9963_FSM_ADDR, &fsm_reg, 50);
+	if (ret != L9963_OK) {
+		return ret;
+	}
+
+	/* Perform the FSM register write with the new SW_RST value */
+	fsm_reg.FSM.SW_RST = 0b10;
+	ret = L9963_Driver_RegisterWrite(&handle->drv_handle, dev_id, L9963_FSM_ADDR, &fsm_reg, 50);
+
+	return ret;
+}
+
+L9963_Status L9963_GoToSleep(L9963_Handle* handle, uint8_t dev_id) {
+	L9963_Status ret = L9963_OK;
+	L9963_RegisterUnion fsm_reg;
+
+	ret = L9963_Driver_RegisterRead(&handle->drv_handle, dev_id, L9963_FSM_ADDR, &fsm_reg, 50);
+	if (ret != L9963_OK) {
+		return ret;
+	}
+
+	/* Perform the FSM register write with the new GO2SLP value */
+	fsm_reg.FSM.GO2SLP = 0b10;
+	ret = L9963_Driver_RegisterWrite(&handle->drv_handle, dev_id, L9963_FSM_ADDR, &fsm_reg, 50);
+
+	return ret;
+}
+
+L9963_Status L9963_SetEnabledCells(L9963_Handle* handle, uint8_t dev_id, uint16_t en_cells_mask) {
+	L9963_Status status = L9963_OK;
+	L9963_RegisterUnion vcells_en_reg = {0};
+
+	for (uint8_t i = 0; i < L9963_TOTAL_CELLS; i++) {
+		if (en_cells_mask & (1 << i)) {
+			// the i-th cell must be enabled
+			switch (i + 1) {
+				case 1:
+					vcells_en_reg.VCELLS_EN.VCELL1_EN = 1;
+					break;
+				case 2:
+					vcells_en_reg.VCELLS_EN.VCELL2_EN = 1;
+					break;
+				case 3:
+					vcells_en_reg.VCELLS_EN.VCELL3_EN = 1;
+					break;
+				case 4:
+					vcells_en_reg.VCELLS_EN.VCELL4_EN = 1;
+					break;
+				case 5:
+					vcells_en_reg.VCELLS_EN.VCELL5_EN = 1;
+					break;
+				case 6:
+					vcells_en_reg.VCELLS_EN.VCELL6_EN = 1;
+					break;
+				case 7:
+					vcells_en_reg.VCELLS_EN.VCELL7_EN = 1;
+					break;
+				case 8:
+					vcells_en_reg.VCELLS_EN.VCELL8_EN = 1;
+					break;
+				case 9:
+					vcells_en_reg.VCELLS_EN.VCELL9_EN = 1;
+					break;
+				case 10:
+					vcells_en_reg.VCELLS_EN.VCELL10_EN = 1;
+					break;
+				case 11:
+					vcells_en_reg.VCELLS_EN.VCELL11_EN = 1;
+					break;
+				case 12:
+					vcells_en_reg.VCELLS_EN.VCELL12_EN = 1;
+					break;
+				case 13:
+					vcells_en_reg.VCELLS_EN.VCELL13_EN = 1;
+					break;
+				case 14:
+					vcells_en_reg.VCELLS_EN.VCELL14_EN = 1;
+					break;
+				default:
+					break;
+			}
+		}
+	}
+
+	status = L9963_Driver_RegisterWrite(&handle->drv_handle, dev_id, L9963_VCELLS_EN_ADDR,
+										&vcells_en_reg, 50);
 
 	return status;
 }
