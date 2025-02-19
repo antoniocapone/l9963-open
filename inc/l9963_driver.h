@@ -238,6 +238,12 @@ L9963_Status L9963_Driver_RegisterRead(L9963_Driver_Handle *dev, uint8_t dev_id,
 L9963_Status L9963_Driver_RegisterWrite(L9963_Driver_Handle *dev, uint8_t dev_id, L9963_RegistersAddr reg_addr, L9963_RegisterUnion *data, uint8_t timeout);
 
 /**
+ * @brief Sends a dummy frame for waking up the device from the sleep state
+ * @param[in] dev: pointer to device handler structure
+ */
+L9963_Status L9963_Driver_Wakeup(L9963_Driver_Handle *dev);
+
+/**
  * @brief Perform a synchronous SPI receive and automatically checks for CRC errors
  * @param[in] dev: pointer to device handler structure
  * @param[out] frame: pointer to received frame buffer

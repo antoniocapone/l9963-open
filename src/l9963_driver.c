@@ -99,6 +99,11 @@ L9963_Status L9963_Driver_RegisterWrite(L9963_Driver_Handle* dev, uint8_t dev_id
 	return L9963_Driver_RegisterCmd(dev, 1, dev_id, reg_addr, data, timeout);
 }
 
+L9963_Status L9963_Driver_Wakeup(L9963_Driver_Handle* dev) {
+	uint8_t dummy_frame[5] = {0x0};
+	return L9963_Driver_SPI_Transmit(dev, dummy_frame, 5, 50);
+}
+
 L9963_Status L9963_Driver_WaitReceive(L9963_Driver_Handle* dev, L9963_Driver_FrameUnion* frame, uint8_t dev_id, uint8_t timeout) {
 	uint8_t raw[5];
 
