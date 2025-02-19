@@ -136,8 +136,6 @@ L9963_Status L9963_GoToSleep(L9963_Handle *handle, uint8_t dev_id);
  */
 L9963_Status L9963_SetEnabledCells(L9963_Handle *handle, uint8_t dev_id, uint16_t en_cells_mask);
 
-// L9963_Status L9963_set_enabled_cells(L9963_Handle *handle, uint8_t device, uint16_t cells);
-
 // L9963_Status L9963_enable_vref(L9963_Handle *handle, uint8_t device, uint8_t preserve_reg_value);
 
 // L9963_Status L9963_start_conversion(L9963_Handle *handle,
@@ -147,21 +145,37 @@ L9963_Status L9963_SetEnabledCells(L9963_Handle *handle, uint8_t dev_id, uint16_
 
 // L9963_Status L9963_poll_conversion(L9963_Handle *handle, uint8_t device, uint8_t *conversion_done);
 
-// L9963_Status L9963_read_cell_voltage(L9963_Handle *handle,
-// 									uint8_t device,
-// 									L9963_CellsEnum cell,
-// 									uint16_t *vcell,
-// 									uint8_t *data_ready);
+/**
+ * @brief Reads the specified cell voltage binary code.
+ * @param[in] handle: pointer to device handler structure
+ * @param[in] dev_id: 5-bit long device address
+ * @param[in] cell: the desidered cell
+ * @param[out] vcell: the readed voltage
+ * @param[out] data_ready: 0 if data was already read once, 1 otherwise
+ * @retval L9963_OK if no error occurs, L9963_NOT_OK otherwise
+ */
+L9963_Status L9963_ReadCellVoltage(L9963_Handle *handle, uint8_t dev_id, L9963_CellsEnum cell, uint16_t *vcell, uint8_t *data_ready);
 
-// L9963_Status L9963_read_batt_voltage(L9963_Handle *handle,
-// 									uint8_t device,
-// 									uint16_t *vbatt_monitor,
-// 									uint32_t *vbatt_sum);
+/**
+ * @brief Reads the measured battery voltage (via ADC) and the digital sum of all cell's voltages.
+ * @param[in] handle: pointer to device handler structure
+ * @param[in] dev_id: 5-bit long device address
+ * @param[out] vbatt_monitor: the readed battery terminal voltage
+ * @param[out] vbatt_sum: the digital sum of all cell's voltages
+ * @retval L9963_OK if no error occurs, L9963_NOT_OK otherwise
+ */
+L9963_Status L9963_ReadBatteryVoltage(L9963_Handle *handle, uint8_t dev_id, uint16_t *vbatt_monitor, uint32_t *vbatt_sum);
 
-// L9963_Status L9963_read_gpio_voltage(L9963_Handle *handle,
-// 									uint8_t device,
-// 									L9963_GpiosEnum gpio,
-// 									uint16_t *vgpio,
-// 									uint8_t *data_ready);
+/**
+ * @brief Reads the voltage across a desidered GPIO.
+ * @param[in] handle: pointer to device handler structure
+ * @param[in] dev_id: 5-bit long device address
+ * @param[in] gpio: gpio to read
+ * @param[out] vgpio: the readed gpio voltage
+ * @param[out] data_ready: 0 if data was already read once, 1 otherwise
+ * @retval L9963_OK if no error occurs, L9963_NOT_OK otherwise
+ * @note [Antonio Capone] I'm not sure, but i think that is necessary to set a GPIO as analog input in GPIOx_CONFIG to use this function. It will be tested.
+ */
+L9963_Status L9963_ReadGPIO(L9963_Handle *handle, uint8_t dev_id, L9963_GpiosEnum gpio, uint16_t *vgpio, uint8_t *data_ready);
 
 #endif /* __L9963_H_ */

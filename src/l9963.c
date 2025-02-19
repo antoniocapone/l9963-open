@@ -1,6 +1,6 @@
 /**
  * @file l9963.c
- * @brief L9963E high level driver implementation
+ * @brief L9963 high level driver implementation
  *
  * @author Antonio Capone
  * @date 2025-02-17
@@ -170,6 +170,152 @@ L9963_Status L9963_SetEnabledCells(L9963_Handle* handle, uint8_t dev_id, uint16_
 
 	status = L9963_Driver_RegisterWrite(&handle->drv_handle, dev_id, L9963_VCELLS_EN_ADDR,
 										&vcells_en_reg, 50);
+
+	return status;
+}
+
+L9963_Status L9963_ReadCellVoltage(L9963_Handle* handle, uint8_t dev_id, L9963_CellsEnum cell,
+								   uint16_t *vcell, uint8_t* data_ready) {
+
+	L9963_Status status = L9963_OK;
+	L9963_RegistersAddr addr;
+	L9963_RegisterUnion Vcellx_reg = {0};
+
+	/* Searching for cell register address */
+	switch (cell) {
+		case L9963_CELL1:
+			addr = L9963_Vcell1_ADDR;
+			break;
+		case L9963_CELL2:
+			addr = L9963_Vcell2_ADDR;
+			break;
+		case L9963_CELL3:
+			addr = L9963_Vcell3_ADDR;
+			break;
+		case L9963_CELL4:
+			addr = L9963_Vcell4_ADDR;
+			break;
+		case L9963_CELL5:
+			addr = L9963_Vcell5_ADDR;
+			break;
+		case L9963_CELL6:
+			addr = L9963_Vcell6_ADDR;
+			break;
+		case L9963_CELL7:
+			addr = L9963_Vcell7_ADDR;
+			break;
+		case L9963_CELL8:
+			addr = L9963_Vcell8_ADDR;
+			break;
+		case L9963_CELL9:
+			addr = L9963_Vcell9_ADDR;
+			break;
+		case L9963_CELL10:
+			addr = L9963_Vcell10_ADDR;
+			break;
+		case L9963_CELL11:
+			addr = L9963_Vcell11_ADDR;
+			break;
+		case L9963_CELL12:
+			addr = L9963_Vcell12_ADDR;
+			break;
+		case L9963_CELL13:
+			addr = L9963_Vcell13_ADDR;
+			break;
+		case L9963_CELL14:
+			addr = L9963_Vcell14_ADDR;
+			break;
+		default:
+			addr = L9963_Vcell1_ADDR;
+			break;
+	}
+
+	status = L9963_Driver_RegisterRead(&handle->drv_handle, dev_id, addr, &Vcellx_reg, 50);
+	if (status != L9963_OK) {
+		return status;
+	}
+
+	/* Here we use Vcell1 because all Vcellx register structures are the same at bit level */
+	*vcell = Vcellx_reg.Vcell1.VCell1;
+	*data_ready = Vcellx_reg.Vcell1.d_rdy_Vcell1;
+
+	return status;
+}
+
+L9963_Status L9963_ReadBatteryVoltage(L9963_Handle* handle, uint8_t dev_id, uint16_t* vbatt_monitor,
+									  uint32_t* vbatt_sum) {
+
+	L9963_Status status = L9963_OK;
+	L9963_RegisterUnion vbattdiv_reg = {0};
+	L9963_RegisterUnion vsumbatt_reg = {0};
+
+	/* Perform VBATT_DIV register read */
+	status = L9963_Driver_RegisterRead(&handle->drv_handle, dev_id, L9963_VBATTDIV_ADDR,
+									   &vbattdiv_reg, 50);
+	if (status != L9963_OK) {
+		return status;
+	}
+
+	/* Perform VSUM_BATT register read */
+	status = L9963_Driver_RegisterRead(&handle->drv_handle, dev_id, L9963_VSUMBATT_ADDR,
+									   &vsumbatt_reg, 50);
+	if (status != L9963_OK) {
+		return status;
+	}
+
+	/**
+	 * vsum_batt is the digital sum of all cells voltage measurements. The more significant 18 bit
+	 * of vsum_batt are in VSUMBATT register, the 2 bit less significant are in VBATTDIV register.
+	 * VBATT_DIV is the direct series conversion.
+	 */
+	*vbatt_monitor = vbattdiv_reg.VBATTDIV.VBATT_DIV;
+	*vbatt_sum = (vsumbatt_reg.VSUMBATT.vsum_batt19_2 << 2) | vbattdiv_reg.VBATTDIV.vsum_batt1_0;
+
+	return status;
+}
+
+L9963_Status L9963_ReadGPIO(L9963_Handle* handle, uint8_t dev_id, L9963_GpiosEnum gpio,
+							uint16_t* vgpio, uint8_t* data_ready) {
+
+	L9963_Status status = L9963_OK;
+	L9963_RegistersAddr addr;
+	L9963_RegisterUnion gpiox_meas_reg = {0};
+
+	switch (gpio) {
+		case L9963_GPIO3:
+			addr = L9963_GPIO3_MEAS_ADDR;
+			break;
+		case L9963_GPIO4:
+			addr = L9963_GPIO4_MEAS_ADDR;
+			break;
+		case L9963_GPIO5:
+			addr = L9963_GPIO5_MEAS_ADDR;
+			break;
+		case L9963_GPIO6:
+			addr = L9963_GPIO6_MEAS_ADDR;
+			break;
+		case L9963_GPIO7:
+			addr = L9963_GPIO7_MEAS_ADDR;
+			break;
+		case L9963_GPIO8:
+			addr = L9963_GPIO8_MEAS_ADDR;
+			break;
+		case L9963_GPIO9:
+			addr = L9963_GPIO9_MEAS_ADDR;
+			break;
+		default:
+			addr = L9963_GPIO3_MEAS_ADDR;
+			break;
+	}
+
+	status = L9963_Driver_RegisterRead(&handle->drv_handle, dev_id, addr, &gpiox_meas_reg, 50);
+	if (status != L9963_OK) {
+		return status;
+	}
+
+	/* Here we use GPIO3_MEAS because all GPIOx_MEAS register structures are the same at bit level */
+	*vgpio = gpiox_meas_reg.GPIO3_MEAS.GPIO3_MEAS;
+	*data_ready = gpiox_meas_reg.GPIO3_MEAS.d_rdy_gpio3;
 
 	return status;
 }
