@@ -74,13 +74,25 @@ typedef enum {
 	L9963_FSM_CyclicWakeUp 	= 0b1000
 } L9963_FSM_Status;
 
+typedef enum {
+	L9963_CellConvTime0_290ms = 	0b000,
+	L9963_CellConvTime1_16ms = 		0b001,
+	L9963_CellConvTime2_32ms = 		0b010,
+	L9963_CellConvTime9_28ms = 		0b011,
+	L9963_CellConvTime18_56ms = 	0b100,
+	L9963_CellConvTime37_12ms = 	0b101,
+	L9963_CellConvTime74_24ms = 	0b110,
+	L9963_CellConvTime148_48ms = 	0b111,
+} L9963_CellConvTimeEnum;
+
 /**
  * @brief Perform initialization of the high level driver.
  * @param[in] handle: pointer to device handler structure
  * @param[in] interface: structure that contains the user's platform dependent APIs implementations
  * @retval L9963_OK if no error occurs, L9963_NOT_OK otherwise
  */
-L9963_Status L9963_Init(L9963_Handle *handle, L9963_Platform interface);
+L9963_Status
+L9963_Init(L9963_Handle *handle, L9963_Platform interface);
 
 /**
  * @brief Perform the device address assignment (dev_id) in the DEV_GEN_CFG register.
@@ -138,12 +150,25 @@ L9963_Status L9963_SetEnabledCells(L9963_Handle *handle, uint8_t dev_id, uint16_
 
 // L9963_Status L9963_enable_vref(L9963_Handle *handle, uint8_t device, uint8_t preserve_reg_value);
 
-// L9963_Status L9963_start_conversion(L9963_Handle *handle,
-// 									uint8_t device,
-// 									uint8_t adc_filter_soc,
-// 									uint8_t options);
+/**
+ * @brief Request for an On-Demand voltage conversion
+ * @param[in] handle: pointer to device handler structure
+ * @param[in] dev_id: 5-bit long device address
+ * @param[in] adc_filter_soc: timing filter window used for the conversion
+ * @param[in] gpio_conv_en: 1 for enabling also gpio convertion, 0 otherwise
+ * @param[in] hwsc: 1 for enabling hardware self check during convertion, 0 otherwise
+ * @retval L9963_OK if no error occurs, L9963_NOT_OK otherwise
+ */
+L9963_Status L9963_StartOnDemandConversion(L9963_Handle *handle, uint8_t dev_id, L9963_CellConvTimeEnum adc_filter_soc, uint8_t gpio_conv_en, uint8_t hwsc);
 
-// L9963_Status L9963_poll_conversion(L9963_Handle *handle, uint8_t device, uint8_t *conversion_done);
+/**
+ * @brief Checks if a past on demand voltage conversion is finished
+ * @param[in] handle: pointer to device handler structure
+ * @param[in] dev_id: 5-bit long device address
+ * @param[out] finished: 1 if the conversion is finished, 0 otherwise
+ * @retval L9963_OK if no error occurs, L9963_NOT_OK otherwise
+ */
+L9963_Status L9963_IsOnDemandConversionFinished(L9963_Handle *handle, uint8_t dev_id, uint8_t *finished);
 
 /**
  * @brief Reads the specified cell voltage binary code.
@@ -177,5 +202,23 @@ L9963_Status L9963_ReadBatteryVoltage(L9963_Handle *handle, uint8_t dev_id, uint
  * @note [Antonio Capone] I'm not sure, but i think that is necessary to set a GPIO as analog input in GPIOx_CONFIG to use this function. It will be tested.
  */
 L9963_Status L9963_ReadGPIO(L9963_Handle *handle, uint8_t dev_id, L9963_GpiosEnum gpio, uint16_t *vgpio, uint8_t *data_ready);
+
+/**
+ * @brief Enables or disables the Coulomb counting on all cells
+ * @param[in] handle: pointer to device handler structure
+ * @param[in] dev_id: 5-bit long device address
+ * @param[in] enable: 1 for enabling and 0 for disabling
+ * @retval L9963_OK if no error occurs, L9963_NOT_OK otherwise
+ */
+L9963_Status L9963_EnableDisableCoulombCounting(L9963_Handle *handle, uint8_t dev_id, uint8_t enable);
+
+/**
+ * @brief Gets the coulomb counter samples number
+ * @param[in] handle: pointer to device handler structure
+ * @param[in] dev_id: 5-bit long device address
+ * @param[out] n_samples: number of cc samples
+ * @retval L9963_OK if no error occurs, L9963_NOT_OK otherwise
+ */
+L9963_Status L9963_GetCoulombCounterSamples(L9963_Handle *handle, uint8_t dev_id, uint16_t *n_samples);
 
 #endif /* __L9963_H_ */

@@ -174,6 +174,45 @@ L9963_Status L9963_SetEnabledCells(L9963_Handle* handle, uint8_t dev_id, uint16_
 	return status;
 }
 
+L9963_Status L9963_StartOnDemandConversion(L9963_Handle* handle, uint8_t dev_id,
+										   L9963_CellConvTimeEnum adc_filter_soc,
+										   uint8_t gpio_conv_en, uint8_t hwsc) {
+	L9963_Status status = L9963_OK;
+	L9963_RegisterUnion ADCV_CONV_reg;
+
+	status = L9963_Driver_RegisterRead(&handle->drv_handle, dev_id, L9963_ADCV_CONV_ADDR,
+									   &ADCV_CONV_reg, 50);
+	if (status != L9963_OK) {
+		return status;
+	}
+
+	ADCV_CONV_reg.ADCV_CONV.SOC = 1U;
+	ADCV_CONV_reg.ADCV_CONV.ADC_FILTER_SOC = adc_filter_soc;
+	ADCV_CONV_reg.ADCV_CONV.GPIO_CONV = gpio_conv_en & 1U;
+	ADCV_CONV_reg.ADCV_CONV.HWSC = hwsc; /* Perform the Hardware Self-Check during convertion */
+
+	status = L9963_Driver_RegisterWrite(&handle->drv_handle, dev_id, L9963_ADCV_CONV_ADDR,
+										&ADCV_CONV_reg, 50);
+
+	return status;
+}
+
+L9963_Status L9963_IsOnDemandConversionFinished(L9963_Handle* handle, uint8_t dev_id,
+												uint8_t* finished) {
+	L9963_Status status = L9963_OK;
+	L9963_RegisterUnion ADCV_CONV_reg;
+
+	status = L9963_Driver_RegisterRead(&handle->drv_handle, dev_id, L9963_ADCV_CONV_ADDR,
+									   &ADCV_CONV_reg, 50);
+	if (status != L9963_OK) {
+		return status;
+	}
+
+	*finished = ADCV_CONV_reg.ADCV_CONV.DUTY_ON;
+
+	return status;
+}
+
 L9963_Status L9963_ReadCellVoltage(L9963_Handle* handle, uint8_t dev_id, L9963_CellsEnum cell,
 								   uint16_t *vcell, uint8_t* data_ready) {
 
@@ -316,6 +355,42 @@ L9963_Status L9963_ReadGPIO(L9963_Handle* handle, uint8_t dev_id, L9963_GpiosEnu
 	/* Here we use GPIO3_MEAS because all GPIOx_MEAS register structures are the same at bit level */
 	*vgpio = gpiox_meas_reg.GPIO3_MEAS.GPIO3_MEAS;
 	*data_ready = gpiox_meas_reg.GPIO3_MEAS.d_rdy_gpio3;
+
+	return status;
+}
+
+L9963_Status L9963_EnableDisableCoulombCounting(L9963_Handle* handle, uint8_t dev_id,
+												uint8_t enable) {
+
+	L9963_Status status = L9963_OK;
+	L9963_RegisterUnion csa_gpio_msk_reg;
+
+	status = L9963_Driver_RegisterRead(&handle->drv_handle, dev_id, L9963_CSA_GPIO_MSK_ADDR,
+									   &csa_gpio_msk_reg, 50);
+	if (status != L9963_OK) {
+		return status;
+	}
+
+	csa_gpio_msk_reg.CSA_GPIO_MSK.CoulombCounter_en = enable & 1U;
+	status = L9963_Driver_RegisterWrite(&handle->drv_handle, dev_id, L9963_CSA_GPIO_MSK_ADDR,
+									   &csa_gpio_msk_reg, 50);
+
+	return status;
+}
+
+L9963_Status L9963_GetCoulombCounterSamples(L9963_Handle* handle, uint8_t dev_id,
+											uint16_t* n_samples) {
+
+	L9963_Status status = L9963_OK;
+	L9963_RegisterUnion CoulCntrTime_reg;
+
+	status = L9963_Driver_RegisterRead(&handle->drv_handle, dev_id, L9963_CoulCntrTime_ADDR,
+									   &CoulCntrTime_reg, 50);
+	if (status != L9963_OK) {
+		return status;
+	}
+
+	*n_samples = CoulCntrTime_reg.CoulCntrTime.CoulombCntTime;
 
 	return status;
 }
