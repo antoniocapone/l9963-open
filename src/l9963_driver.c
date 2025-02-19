@@ -220,3 +220,7 @@ uint8_t L9963_Driver_ComputeCRC(uint64_t InputWord) {
 uint32_t L9963_Driver_GetTick(L9963_Driver_Handle *dev) {
 	return dev->interface.L9963_Platform_GetTickMs();
 }
+
+void L9963_Driver_DelayMs(L9963_Driver_Handle* dev, uint32_t delay) {
+	dev->interface.L9963_Platform_DelayMs(delay);
+}

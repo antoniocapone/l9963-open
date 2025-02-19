@@ -240,6 +240,7 @@ L9963_Status L9963_Driver_RegisterWrite(L9963_Driver_Handle *dev, uint8_t dev_id
 /**
  * @brief Sends a dummy frame for waking up the device from the sleep state
  * @param[in] dev: pointer to device handler structure
+ * @note This function does not perform the T_WAKEUP wait
  */
 L9963_Status L9963_Driver_Wakeup(L9963_Driver_Handle *dev);
 
@@ -295,5 +296,11 @@ static uint8_t L9963_Driver_ComputeCRC(uint64_t InputWord);
  * @retval System current tick (ms)
  */
 uint32_t L9963_Driver_GetTick(L9963_Driver_Handle *dev);
+
+/**
+ * @param[in] dev: pointer to device handler
+ * @param[in] delay: delay in milliseconds
+ */
+void L9963_Driver_DelayMs(L9963_Driver_Handle *dev, uint32_t delay);
 
 #endif /* __L9963_DRIVER_H_ */
