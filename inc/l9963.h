@@ -75,6 +75,11 @@ typedef enum {
 } L9963_FSM_Status;
 
 typedef enum {
+	L9963_Balancing_Manual	= 0b01,
+	L9963_Balancing_Timed	= 0b10,
+} L9963_Balancing_Mode;
+
+typedef enum {
 	L9963_CellConvTime0_290ms = 	0b000,
 	L9963_CellConvTime1_16ms = 		0b001,
 	L9963_CellConvTime2_32ms = 		0b010,
@@ -91,8 +96,7 @@ typedef enum {
  * @param[in] interface: structure that contains the user's platform dependent APIs implementations
  * @retval L9963_OK if no error occurs, L9963_NOT_OK otherwise
  */
-L9963_Status
-L9963_Init(L9963_Handle *handle, L9963_Platform interface);
+L9963_Status L9963_Init(L9963_Handle *handle, L9963_Platform interface);
 
 /**
  * @brief Perform the device address assignment (dev_id) in the DEV_GEN_CFG register.
@@ -140,7 +144,7 @@ L9963_Status L9963_SoftwareReset(L9963_Handle *handle, uint8_t dev_id);
 L9963_Status L9963_GoToSleep(L9963_Handle *handle, uint8_t dev_id);
 
 /**
- * @brief Enables the specified cells.
+ * @brief Enables voltage conversion on the specified cells.
  * @param[in] handle: pointer to device handler structure
  * @param[in] dev_id: 5-bit long device address
  * @param[in] en_cells_mask: 14-bit long binary mask that indicates cells (bit set) to enable
@@ -220,5 +224,34 @@ L9963_Status L9963_EnableDisableCoulombCounting(L9963_Handle *handle, uint8_t de
  * @retval L9963_OK if no error occurs, L9963_NOT_OK otherwise
  */
 L9963_Status L9963_GetCoulombCounterSamples(L9963_Handle *handle, uint8_t dev_id, uint16_t *n_samples);
+
+/**
+ * @brief Sets the balancing mode.
+ * @param[in] handle: pointer to device handler structure
+ * @param[in] dev_id: 5-bit long device address
+ * @param[out] bal_status: balancing mode, manual or timed
+ * @retval L9963_OK if no error occurs, L9963_NOT_OK otherwise
+ * @note Timed balancing is not implemented yet
+ */
+L9963_Status L9963_SetBalancingMode(L9963_Handle *handle, uint8_t dev_id, L9963_Balancing_Mode bal_mode);
+
+/**
+ * @brief Enables balancing on specified cells.
+ * @param[in] handle: pointer to device handler structure
+ * @param[in] dev_id: 5-bit long device address
+ * @param[in] bal_mask: 14-bit long binary mask that indicates cells (bit set) to enable
+ * @retval L9963_OK if no error occurs, L9963_NOT_OK otherwise
+ */
+L9963_Status L9963_SetBalancingCells(L9963_Handle *handle, uint8_t dev_id, uint16_t bal_mask);
+
+/**
+ * @brief Sets the balancing mode.
+ * @param[in] handle: pointer to device handler structure
+ * @param[in] dev_id: 5-bit long device address
+ * @param[out] start: 1 for manual balancing start, 0 for manual balancing stop
+ * @retval L9963_OK if no error occurs, L9963_NOT_OK otherwise
+ * @note If start != 0 and start != 1, L9963_NOT_OK will be returned.
+ */
+L9963_Status L9963_StartStopBalancing(L9963_Handle *handle, uint8_t dev_id, uint8_t start);
 
 #endif /* __L9963_H_ */

@@ -394,3 +394,134 @@ L9963_Status L9963_GetCoulombCounterSamples(L9963_Handle* handle, uint8_t dev_id
 
 	return status;
 }
+
+L9963_Status L9963_SetBalancingMode(L9963_Handle* handle, uint8_t dev_id,
+									L9963_Balancing_Mode bal_mode) {
+
+	L9963_Status status = L9963_OK;
+	L9963_RegisterUnion Bal_2_reg;
+
+	status = L9963_Driver_RegisterRead(&handle->drv_handle, dev_id, L9963_Bal_2_ADDR, &Bal_2_reg, 50);
+	if (status != L9963_OK) {
+		return status;
+	}
+
+	Bal_2_reg.Bal_2.Balmode = bal_mode;
+	status = L9963_Driver_RegisterWrite(&handle->drv_handle, dev_id, L9963_Bal_2_ADDR, &Bal_2_reg, 50);
+
+	return status;
+}
+
+L9963_Status L9963_SetBalancingCells(L9963_Handle* handle, uint8_t dev_id, uint16_t bal_mask) {
+	L9963_Status status = L9963_OK;
+	L9963_RegisterUnion BalCell14_7act_reg, BalCell6_1act_reg;
+
+	/* Cells from 14 to 7 */
+	status = L9963_Driver_RegisterRead(&handle->drv_handle, dev_id, L9963_BalCell14_7act_ADDR,
+									   &BalCell14_7act_reg, 50);
+	if (status != L9963_OK) {
+		return status;
+	}
+
+	for (uint8_t i = 14; i >= 7; i--) {
+		switch (i) {
+			case L9963_CELL14:
+			BalCell14_7act_reg.BalCell14_7act.BAL14 = bal_mask & (1 << i) ? 0b10 : 0b00;
+			break;
+			case L9963_CELL13:
+			BalCell14_7act_reg.BalCell14_7act.BAL13 = bal_mask & (1 << i) ? 0b10 : 0b00;
+				break;
+			case L9963_CELL12:
+			BalCell14_7act_reg.BalCell14_7act.BAL12 = bal_mask & (1 << i) ? 0b10 : 0b00;
+			break;
+			case L9963_CELL11:
+			BalCell14_7act_reg.BalCell14_7act.BAL11 = bal_mask & (1 << i) ? 0b10 : 0b00;
+			break;
+			case L9963_CELL10:
+			BalCell14_7act_reg.BalCell14_7act.BAL10 = bal_mask & (1 << i) ? 0b10 : 0b00;
+			break;
+			case L9963_CELL9:
+			BalCell14_7act_reg.BalCell14_7act.BAL9 = bal_mask & (1 << i) ? 0b10 : 0b00;
+			break;
+			case L9963_CELL8:
+			BalCell14_7act_reg.BalCell14_7act.BAL8 = bal_mask & (1 << i) ? 0b10 : 0b00;
+			break;
+			case L9963_CELL7:
+			BalCell14_7act_reg.BalCell14_7act.BAL7 = bal_mask & (1 << i) ? 0b10 : 0b00;
+			break;
+			default:
+			/* I think this case is impossible */
+			break;
+		}
+	}
+
+	status = L9963_Driver_RegisterWrite(&handle->drv_handle, dev_id, L9963_BalCell14_7act_ADDR,
+										&BalCell14_7act_reg, 50);
+	if (status != L9963_OK) {
+		return status;
+	}
+
+	/* Cells from 6 to 1 */
+	status = L9963_Driver_RegisterRead(&handle->drv_handle, dev_id, L9963_BalCell6_1act_ADDR,
+									   &BalCell6_1act_reg, 50);
+	if (status != 0) {
+		return status;
+	}
+
+	for (uint8_t i = 6; i >= 1; i--) {
+		switch (i) {
+			case L9963_CELL6:
+				BalCell6_1act_reg.BalCell6_1act.BAL6 = bal_mask & (1 << i) ? 0b10 : 0b00;
+				break;
+			case L9963_CELL5:
+				BalCell6_1act_reg.BalCell6_1act.BAL5 = bal_mask & (1 << i) ? 0b10 : 0b00;
+				break;
+			case L9963_CELL4:
+				BalCell6_1act_reg.BalCell6_1act.BAL4 = bal_mask & (1 << i) ? 0b10 : 0b00;
+				break;
+			case L9963_CELL3:
+				BalCell6_1act_reg.BalCell6_1act.BAL3 = bal_mask & (1 << i) ? 0b10 : 0b00;
+				break;
+			case L9963_CELL2:
+				BalCell6_1act_reg.BalCell6_1act.BAL2 = bal_mask & (1 << i) ? 0b10 : 0b00;
+				break;
+			case L9963_CELL1:
+				BalCell6_1act_reg.BalCell6_1act.BAL1 = bal_mask & (1 << i) ? 0b10 : 0b00;
+				break;
+			default:
+				/* I think this case is impossible */
+				break;
+		}
+	}
+
+	status = L9963_Driver_RegisterWrite(&handle->drv_handle, dev_id, L9963_BalCell6_1act_ADDR,
+										&BalCell6_1act_reg, 50);
+
+	return status;
+}
+
+L9963_Status L9963_StartStopBalancing(L9963_Handle* handle, uint8_t dev_id, uint8_t start) {
+	if (start != 0 && start != 1) {
+		return L9963_NOT_OK;
+	}
+
+	L9963_Status status = L9963_OK;
+	L9963_RegisterUnion Bal_1_reg;
+
+	status = L9963_Driver_RegisterRead(&handle->drv_handle, dev_id, L9963_Bal_1_ADDR, &Bal_1_reg, 50);
+	if (status != L9963_OK) {
+		return status;
+	}
+
+	if (start == 1) {
+		Bal_1_reg.Bal_1.bal_start = 1;
+		Bal_1_reg.Bal_1.bal_stop = 0;
+	} else {
+		Bal_1_reg.Bal_1.bal_start = 0;
+		Bal_1_reg.Bal_1.bal_stop = 1;
+	}
+
+	status = L9963_Driver_RegisterRead(&handle->drv_handle, dev_id, L9963_Bal_1_ADDR, &Bal_1_reg, 50);
+
+	return status;
+}
