@@ -28,9 +28,7 @@ L9963_Status L9963_SetDevID(L9963_Handle* handle, uint8_t dev_id) {
 
 	/* Perform the wakeup from the sleep state, the device goes on the init state */
 	status = L9963_Driver_Wakeup(&handle->drv_handle);
-	if (status != L9963_OK) {
-		return status;
-	}
+	L9963_ASSERT_STATUS(status);
 	L9963_Driver_DelayMs(&handle->drv_handle, L9963_T_WAKEUP_MS);
 
 	/* Sets all DEV_GEN_CFG fields */
@@ -51,17 +49,12 @@ L9963_Status L9963_SetCommTimeout(L9963_Handle* handle, L9963_CommTimeoutEnum co
 	 */
 	status = L9963_Driver_RegisterRead(&handle->drv_handle, dev_id, L9963_fastch_baluv_ADDR,
 									   &fastch_baluv_reg, 50);
-	if (status != L9963_OK) {
-		return status;
-	}
+	L9963_ASSERT_STATUS(status);
 
 	/* Perform the fastch_baluv register write with the new commTimeout value */
 	fastch_baluv_reg.fastch_baluv.CommTimeout = commTimeout;
 	status = L9963_Driver_RegisterWrite(&handle->drv_handle, dev_id, L9963_fastch_baluv_ADDR,
 										&fastch_baluv_reg, 50);
-	if (status != L9963_OK) {
-		return status;
-	}
 
 	return status;
 }
@@ -71,9 +64,7 @@ L9963_Status L9963_GetFsmStatus(L9963_Handle* handle, uint8_t dev_id, L9963_FSM_
 	L9963_RegisterUnion fsm_reg;
 
 	ret = L9963_Driver_RegisterRead(&handle->drv_handle, dev_id, L9963_FSM_ADDR, &fsm_reg, 50);
-	if (ret != L9963_OK) {
-		return ret;
-	}
+	L9963_ASSERT_STATUS(ret);
 
 	*status = (L9963_FSM_Status)fsm_reg.FSM.FSMstatus;
 
@@ -85,9 +76,7 @@ L9963_Status L9963_SoftwareReset(L9963_Handle* handle, uint8_t dev_id) {
 	L9963_RegisterUnion fsm_reg;
 
 	ret = L9963_Driver_RegisterRead(&handle->drv_handle, dev_id, L9963_FSM_ADDR, &fsm_reg, 50);
-	if (ret != L9963_OK) {
-		return ret;
-	}
+	L9963_ASSERT_STATUS(ret);
 
 	/* Perform the FSM register write with the new SW_RST value */
 	fsm_reg.FSM.SW_RST = 0b10;
@@ -101,9 +90,7 @@ L9963_Status L9963_GoToSleep(L9963_Handle* handle, uint8_t dev_id) {
 	L9963_RegisterUnion fsm_reg;
 
 	ret = L9963_Driver_RegisterRead(&handle->drv_handle, dev_id, L9963_FSM_ADDR, &fsm_reg, 50);
-	if (ret != L9963_OK) {
-		return ret;
-	}
+	L9963_ASSERT_STATUS(ret);
 
 	/* Perform the FSM register write with the new GO2SLP value */
 	fsm_reg.FSM.GO2SLP = 0b10;
@@ -182,9 +169,7 @@ L9963_Status L9963_StartOnDemandConversion(L9963_Handle* handle, uint8_t dev_id,
 
 	status = L9963_Driver_RegisterRead(&handle->drv_handle, dev_id, L9963_ADCV_CONV_ADDR,
 									   &ADCV_CONV_reg, 50);
-	if (status != L9963_OK) {
-		return status;
-	}
+	L9963_ASSERT_STATUS(status);
 
 	ADCV_CONV_reg.ADCV_CONV.SOC = 1U;
 	ADCV_CONV_reg.ADCV_CONV.ADC_FILTER_SOC = adc_filter_soc;
@@ -204,9 +189,7 @@ L9963_Status L9963_IsOnDemandConversionFinished(L9963_Handle* handle, uint8_t de
 
 	status = L9963_Driver_RegisterRead(&handle->drv_handle, dev_id, L9963_ADCV_CONV_ADDR,
 									   &ADCV_CONV_reg, 50);
-	if (status != L9963_OK) {
-		return status;
-	}
+	L9963_ASSERT_STATUS(status);
 
 	*finished = ADCV_CONV_reg.ADCV_CONV.DUTY_ON;
 
@@ -270,9 +253,7 @@ L9963_Status L9963_ReadCellVoltage(L9963_Handle* handle, uint8_t dev_id, L9963_C
 	}
 
 	status = L9963_Driver_RegisterRead(&handle->drv_handle, dev_id, addr, &Vcellx_reg, 50);
-	if (status != L9963_OK) {
-		return status;
-	}
+	L9963_ASSERT_STATUS(status);
 
 	/* Here we use Vcell1 because all Vcellx register structures are the same at bit level */
 	*vcell = Vcellx_reg.Vcell1.VCell1;
@@ -291,16 +272,12 @@ L9963_Status L9963_ReadBatteryVoltage(L9963_Handle* handle, uint8_t dev_id, uint
 	/* Perform VBATT_DIV register read */
 	status = L9963_Driver_RegisterRead(&handle->drv_handle, dev_id, L9963_VBATTDIV_ADDR,
 									   &vbattdiv_reg, 50);
-	if (status != L9963_OK) {
-		return status;
-	}
+	L9963_ASSERT_STATUS(status);
 
 	/* Perform VSUM_BATT register read */
 	status = L9963_Driver_RegisterRead(&handle->drv_handle, dev_id, L9963_VSUMBATT_ADDR,
 									   &vsumbatt_reg, 50);
-	if (status != L9963_OK) {
-		return status;
-	}
+	L9963_ASSERT_STATUS(status);
 
 	/**
 	 * vsum_batt is the digital sum of all cells voltage measurements. The more significant 18 bit
@@ -348,9 +325,7 @@ L9963_Status L9963_ReadGPIO(L9963_Handle* handle, uint8_t dev_id, L9963_GpiosEnu
 	}
 
 	status = L9963_Driver_RegisterRead(&handle->drv_handle, dev_id, addr, &gpiox_meas_reg, 50);
-	if (status != L9963_OK) {
-		return status;
-	}
+	L9963_ASSERT_STATUS(status);
 
 	/* Here we use GPIO3_MEAS because all GPIOx_MEAS register structures are the same at bit level */
 	*vgpio = gpiox_meas_reg.GPIO3_MEAS.GPIO3_MEAS;
@@ -367,9 +342,7 @@ L9963_Status L9963_EnableDisableCoulombCounting(L9963_Handle* handle, uint8_t de
 
 	status = L9963_Driver_RegisterRead(&handle->drv_handle, dev_id, L9963_CSA_GPIO_MSK_ADDR,
 									   &csa_gpio_msk_reg, 50);
-	if (status != L9963_OK) {
-		return status;
-	}
+	L9963_ASSERT_STATUS(status);
 
 	csa_gpio_msk_reg.CSA_GPIO_MSK.CoulombCounter_en = enable & 1U;
 	status = L9963_Driver_RegisterWrite(&handle->drv_handle, dev_id, L9963_CSA_GPIO_MSK_ADDR,
@@ -386,9 +359,7 @@ L9963_Status L9963_GetCoulombCounterSamples(L9963_Handle* handle, uint8_t dev_id
 
 	status = L9963_Driver_RegisterRead(&handle->drv_handle, dev_id, L9963_CoulCntrTime_ADDR,
 									   &CoulCntrTime_reg, 50);
-	if (status != L9963_OK) {
-		return status;
-	}
+	L9963_ASSERT_STATUS(status);
 
 	*n_samples = CoulCntrTime_reg.CoulCntrTime.CoulombCntTime;
 
@@ -402,9 +373,7 @@ L9963_Status L9963_SetBalancingMode(L9963_Handle* handle, uint8_t dev_id,
 	L9963_RegisterUnion Bal_2_reg;
 
 	status = L9963_Driver_RegisterRead(&handle->drv_handle, dev_id, L9963_Bal_2_ADDR, &Bal_2_reg, 50);
-	if (status != L9963_OK) {
-		return status;
-	}
+	L9963_ASSERT_STATUS(status);
 
 	Bal_2_reg.Bal_2.Balmode = bal_mode;
 	status = L9963_Driver_RegisterWrite(&handle->drv_handle, dev_id, L9963_Bal_2_ADDR, &Bal_2_reg, 50);
@@ -419,9 +388,7 @@ L9963_Status L9963_SetBalancingTimerResolution(L9963_Handle* handle, uint8_t dev
 	L9963_RegisterUnion Bal_2_reg;
 
 	status = L9963_Driver_RegisterRead(&handle->drv_handle, dev_id, L9963_Bal_2_ADDR, &Bal_2_reg, 50);
-	if (status != L9963_OK) {
-		return status;
-	}
+	L9963_ASSERT_STATUS(status);
 
 	Bal_2_reg.Bal_2.TimedBalacc = res;
 
@@ -541,9 +508,7 @@ L9963_Status L9963_SetBalancingCells(L9963_Handle* handle, uint8_t dev_id, uint1
 	/* Cells from 14 to 7 */
 	status = L9963_Driver_RegisterRead(&handle->drv_handle, dev_id, L9963_BalCell14_7act_ADDR,
 									   &BalCell14_7act_reg, 50);
-	if (status != L9963_OK) {
-		return status;
-	}
+	L9963_ASSERT_STATUS(status);
 
 	for (uint8_t i = 14; i >= 7; i--) {
 		switch (i) {
@@ -579,16 +544,12 @@ L9963_Status L9963_SetBalancingCells(L9963_Handle* handle, uint8_t dev_id, uint1
 
 	status = L9963_Driver_RegisterWrite(&handle->drv_handle, dev_id, L9963_BalCell14_7act_ADDR,
 										&BalCell14_7act_reg, 50);
-	if (status != L9963_OK) {
-		return status;
-	}
+	L9963_ASSERT_STATUS(status);
 
 	/* Cells from 6 to 1 */
 	status = L9963_Driver_RegisterRead(&handle->drv_handle, dev_id, L9963_BalCell6_1act_ADDR,
 									   &BalCell6_1act_reg, 50);
-	if (status != 0) {
-		return status;
-	}
+	L9963_ASSERT_STATUS(status);
 
 	for (uint8_t i = 6; i >= 1; i--) {
 		switch (i) {
@@ -631,9 +592,7 @@ L9963_Status L9963_StartStopBalancing(L9963_Handle* handle, uint8_t dev_id, uint
 	L9963_RegisterUnion Bal_1_reg;
 
 	status = L9963_Driver_RegisterRead(&handle->drv_handle, dev_id, L9963_Bal_1_ADDR, &Bal_1_reg, 50);
-	if (status != L9963_OK) {
-		return status;
-	}
+	L9963_ASSERT_STATUS(status);
 
 	if (start == 1) {
 		Bal_1_reg.Bal_1.bal_start = 1;
