@@ -412,6 +412,128 @@ L9963_Status L9963_SetBalancingMode(L9963_Handle* handle, uint8_t dev_id,
 	return status;
 }
 
+L9963_Status L9963_SetBalancingTimerResolution(L9963_Handle* handle, uint8_t dev_id,
+											   L9963_Balancing_Timer_Res res) {
+
+	L9963_Status status = L9963_OK;
+	L9963_RegisterUnion Bal_2_reg;
+
+	status = L9963_Driver_RegisterRead(&handle->drv_handle, dev_id, L9963_Bal_2_ADDR, &Bal_2_reg, 50);
+	if (status != L9963_OK) {
+		return status;
+	}
+
+	Bal_2_reg.Bal_2.TimedBalacc = res;
+
+	status = L9963_Driver_RegisterWrite(&handle->drv_handle, dev_id, L9963_Bal_2_ADDR, &Bal_2_reg, 50);
+
+	return status;
+}
+
+L9963_Status L9963_EnableSilentBalancing(L9963_Handle* handle, uint8_t dev_id,
+												  uint8_t stop_bal_on_sleep) {
+
+	L9963_Status status = 0;
+	L9963_RegisterUnion Bal_1_reg;
+
+	status = L9963_Driver_RegisterRead(&handle->drv_handle, dev_id, L9963_Bal_1_ADDR, &Bal_1_reg, 50);
+	L9963_ASSERT_STATUS(status);
+
+	Bal_1_reg.Bal_1.slp_bal_conf = stop_bal_on_sleep; /* If 1, silent balancing is enabled */
+	status = L9963_Driver_RegisterWrite(&handle->drv_handle, dev_id, L9963_Bal_1_ADDR, &Bal_1_reg, 50);
+
+	return status;
+}
+
+L9963_Status L9963_SetCellBalancingFineTime(L9963_Handle* handle, uint8_t dev_id,
+											L9963_CellsEnum cell, L9963_Balancing_FineTime time) {
+
+	L9963_Status status = L9963_OK;
+	L9963_RegisterUnion Bal_x_reg;
+	L9963_RegisterUnion Bal_x_reg_temp;
+	uint8_t upper_lower_register = 0;
+	L9963_RegistersAddr addr;
+
+	switch (cell) {
+		case L9963_CELL14:
+			upper_lower_register = 1;
+			addr = L9963_Bal_2_ADDR;
+			Bal_x_reg.Bal_2.ThrTimedBalCell14 = time;
+			break;
+		case L9963_CELL13:
+			addr = L9963_Bal_2_ADDR;
+			Bal_x_reg.Bal_2.ThrTimedBalCell13 = time;
+			break;
+		case L9963_CELL12:
+			upper_lower_register = 1;
+			addr = L9963_Bal_3_ADDR;
+			Bal_x_reg.Bal_3.ThrTimedBalCell12 = time;
+			break;
+		case L9963_CELL11:
+			addr = L9963_Bal_3_ADDR;
+			Bal_x_reg.Bal_3.ThrTimedBalCell11 = time;
+			break;
+		case L9963_CELL10:
+			upper_lower_register = 1;
+			addr = L9963_Bal_4_ADDR;
+			Bal_x_reg.Bal_4.ThrTimedBalCell10 = time;
+			break;
+		case L9963_CELL9:
+			addr = L9963_Bal_4_ADDR;
+			Bal_x_reg.Bal_4.ThrTimedBalCell9 = time;
+			break;
+		case L9963_CELL8:
+			upper_lower_register = 1;
+			addr = L9963_Bal_5_ADDR;
+			Bal_x_reg.Bal_5.ThrTimedBalCell8 = time;
+			break;
+		case L9963_CELL7:
+			addr = L9963_Bal_5_ADDR;
+			Bal_x_reg.Bal_5.ThrTimedBalCell7 = time;
+			break;
+		case L9963_CELL6:
+			upper_lower_register = 1;
+			addr = L9963_Bal_6_ADDR;
+			Bal_x_reg.Bal_6.ThrTimedBalCell6 = time;
+			break;
+		case L9963_CELL5:
+			addr = L9963_Bal_6_ADDR;
+			Bal_x_reg.Bal_6.ThrTimedBalCell5 = time;
+			break;
+		case L9963_CELL4:
+			upper_lower_register = 1;
+			addr = L9963_Bal_7_ADDR;
+			Bal_x_reg.Bal_7.ThrTimedBalCell4 = time;
+			break;
+		case L9963_CELL3:
+			addr = L9963_Bal_7_ADDR;
+			Bal_x_reg.Bal_7.ThrTimedBalCell3 = time;
+			break;
+		case L9963_CELL2:
+			upper_lower_register = 1;
+			addr = L9963_Bal_8_ADDR;
+			Bal_x_reg.Bal_8.ThrTimedBalCell2 = time;
+			break;
+		case L9963_CELL1:
+			addr = L9963_Bal_8_ADDR;
+			Bal_x_reg.Bal_8.ThrTimedBalCell1 = time;
+			break;
+	}
+
+	status = L9963_Driver_RegisterRead(&handle->drv_handle, dev_id, addr, &Bal_x_reg_temp, 50);
+	L9963_ASSERT_STATUS(status);
+
+	if (upper_lower_register == 1) {
+		Bal_x_reg_temp.Bal_2.ThrTimedBalCell14 = Bal_x_reg.Bal_2.ThrTimedBalCell14;
+	} else {
+		Bal_x_reg_temp.Bal_2.ThrTimedBalCell13 = Bal_x_reg.Bal_2.ThrTimedBalCell13;
+	}
+
+	status = L9963_Driver_RegisterWrite(&handle->drv_handle, dev_id, addr, &Bal_x_reg_temp, 50);
+
+	return status;
+}
+
 L9963_Status L9963_SetBalancingCells(L9963_Handle* handle, uint8_t dev_id, uint16_t bal_mask) {
 	L9963_Status status = L9963_OK;
 	L9963_RegisterUnion BalCell14_7act_reg, BalCell6_1act_reg;
