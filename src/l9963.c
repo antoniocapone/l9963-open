@@ -606,3 +606,28 @@ L9963_Status L9963_StartStopBalancing(L9963_Handle* handle, uint8_t dev_id, uint
 
 	return status;
 }
+
+L9963_Status L9963_ReadContinousCurrent(L9963_Handle* handle, uint8_t dev_id, uint32_t* current) {
+	L9963_Status status = L9963_OK;
+	L9963_RegisterUnion Ibattery_calib_reg;
+
+	status = L9963_Driver_RegisterRead(&handle->drv_handle, dev_id, L9963_Ibattery_calib_ADDR,
+									   &Ibattery_calib_reg, 50);
+	L9963_ASSERT_STATUS(status);
+
+	*current = Ibattery_calib_reg.Ibattery_calib.CUR_INST_calib;
+
+	return status;
+}
+
+L9963_Status L9963_ReadSynchCurrent(L9963_Handle* handle, uint8_t dev_id, uint32_t* current) {
+	L9963_Status status = L9963_OK;
+	L9963_RegisterUnion Ibattery_synch_reg;
+
+	status = L9963_Driver_RegisterRead(&handle->drv_handle, dev_id, L9963_Ibattery_synch_ADDR, &Ibattery_synch_reg, 50);
+	L9963_ASSERT_STATUS(status);
+
+	*current = Ibattery_synch_reg.Ibattery_synch.CUR_INST_Synch;
+
+	return status;
+}

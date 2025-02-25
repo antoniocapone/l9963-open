@@ -420,4 +420,24 @@ L9963_Status L9963_SetBalancingCells(L9963_Handle *handle, uint8_t dev_id, uint1
  */
 L9963_Status L9963_StartStopBalancing(L9963_Handle *handle, uint8_t dev_id, uint8_t start);
 
+/**
+ * @brief Reads the pack current in asynchronous mode.
+ * @param[in] handle: pointer to device handler structure
+ * @param[in] dev_id: 5-bit long device address
+ * @param[out] current: 18-bit long current inst measurement
+ * @retval L9963_OK if no error occurs, L9963_NOT_OK otherwise
+ */
+L9963_Status L9963_ReadContinousCurrent(L9963_Handle *handle, uint8_t dev_id, uint32_t *current);
+
+/**
+ * @brief Reads the pack current in synchronized mode.
+ * @param[in] handle: pointer to device handler structure
+ * @param[in] dev_id: 5-bit long device address
+ * @param[out] current: 18-bit long current inst measurement
+ * @retval L9963_OK if no error occurs, L9963_NOT_OK otherwise
+ * @note Coulomb Counting routine must be enabled and a voltage conversion on demand request must be performed
+ * before calling this function. The value stored into current must be converted with the appropriate formula (see datasheet)
+ */
+L9963_Status L9963_ReadSynchCurrent(L9963_Handle *handle, uint8_t dev_id, uint32_t *current);
+
 #endif /* __L9963_H_ */

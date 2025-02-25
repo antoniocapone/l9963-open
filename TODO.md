@@ -1,7 +1,7 @@
 # Features that will be implemented in the future
 
 1. [ ] Error flags handling.
-1. [ ] Current measure.
+1. [x] Current measure.
 1. [x] Balancing control features.
 1. [x] Now the driver can handle only manual balancing. Also timed balancing will be implemented.
 1. [ ] Now the driver can handle only on demand conversion mode. Also cyclic conversion will be implemented.
