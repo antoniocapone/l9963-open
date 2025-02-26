@@ -36,15 +36,15 @@ void L9963_Driver_Init(L9963_Driver_Handle* dev, L9963_Platform interface) {
 	dev->interface.L9963_Platform_GPIO_WritePin(L9963_Platform_CS, L9963_Platform_GPIO_PIN_RESET);
 }
 
-static void L9963_Driver_Select(L9963_Driver_Handle* dev) {
+void L9963_Driver_Select(L9963_Driver_Handle* dev) {
 	dev->interface.L9963_Platform_GPIO_WritePin(L9963_Platform_CS, L9963_Platform_GPIO_PIN_RESET);
 }
 
-static void L9963_Driver_Deselect(L9963_Driver_Handle* dev) {
+void L9963_Driver_Deselect(L9963_Driver_Handle* dev) {
 	dev->interface.L9963_Platform_GPIO_WritePin(L9963_Platform_CS, L9963_Platform_GPIO_PIN_SET);
 }
 
-static L9963_Status L9963_Driver_SPI_Transmit(L9963_Driver_Handle* dev, uint8_t* data, uint16_t len, uint32_t timeout) {
+L9963_Status L9963_Driver_SPI_Transmit(L9963_Driver_Handle* dev, uint8_t* data, uint16_t len, uint32_t timeout) {
 	L9963_Driver_Select(dev);
 	L9963_Status ret = dev->interface.L9963_Platform_SPI_Transmit(data, len, timeout);
 	L9963_Driver_Deselect(dev);
@@ -52,7 +52,7 @@ static L9963_Status L9963_Driver_SPI_Transmit(L9963_Driver_Handle* dev, uint8_t*
 	return ret;
 }
 
-static L9963_Status L9963_Driver_SPI_Receive(L9963_Driver_Handle* dev, uint8_t* data, uint16_t len, uint32_t timeout) {
+L9963_Status L9963_Driver_SPI_Receive(L9963_Driver_Handle* dev, uint8_t* data, uint16_t len, uint32_t timeout) {
 	L9963_Driver_Select(dev);
 	L9963_Status ret = dev->interface.L9963_Platform_SPI_Receive(data, len, timeout);
 	L9963_Driver_Deselect(dev);
@@ -60,7 +60,7 @@ static L9963_Status L9963_Driver_SPI_Receive(L9963_Driver_Handle* dev, uint8_t* 
 	return ret;
 }
 
-static L9963_Status L9963_Driver_RegisterCmd(L9963_Driver_Handle* dev, uint8_t rw, uint8_t dev_id, L9963_RegistersAddr reg_addr, L9963_RegisterUnion* data, uint8_t timeout) {
+L9963_Status L9963_Driver_RegisterCmd(L9963_Driver_Handle* dev, uint8_t rw, uint8_t dev_id, L9963_RegistersAddr reg_addr, L9963_RegisterUnion* data, uint8_t timeout) {
 	if (dev == NULL || data == NULL) {
 		return L9963_NOT_OK;
 	}
@@ -104,7 +104,7 @@ L9963_Status L9963_Driver_Wakeup(L9963_Driver_Handle* dev) {
 	return L9963_Driver_SPI_Transmit(dev, dummy_frame, 5, 50);
 }
 
-static L9963_Status L9963_Driver_WaitReceive(L9963_Driver_Handle* dev, L9963_Driver_FrameUnion* frame, uint8_t dev_id, uint8_t timeout) {
+L9963_Status L9963_Driver_WaitReceive(L9963_Driver_Handle* dev, L9963_Driver_FrameUnion* frame, uint8_t dev_id, uint8_t timeout) {
 	uint8_t raw[5];
 
 	frame->cmd.addr = -1;
@@ -167,7 +167,7 @@ L9963_Status L9963_Driver_SendBurst(L9963_Driver_Handle* dev, uint8_t dev_id, L9
 	return L9963_OK;
 }
 
-static void L9963_Driver_FrameSwitchEndianess(uint8_t* in, uint8_t* out) {
+void L9963_Driver_FrameSwitchEndianess(uint8_t* in, uint8_t* out) {
 	out[0] = in[4];
 	out[1] = in[3];
 	out[2] = in[2];
@@ -175,7 +175,7 @@ static void L9963_Driver_FrameSwitchEndianess(uint8_t* in, uint8_t* out) {
 	out[4] = in[0];
 }
 
-static void L9963_Driver_BuildFrame(uint8_t* out, uint8_t pa, uint8_t rw, uint8_t devid, uint8_t addr_command, uint32_t data) {
+void L9963_Driver_BuildFrame(uint8_t* out, uint8_t pa, uint8_t rw, uint8_t devid, uint8_t addr_command, uint32_t data) {
 	L9963_Driver_FrameUnion frame;
 	frame.cmd.pa = pa;
 	frame.cmd.rw_burst = rw;
@@ -187,7 +187,7 @@ static void L9963_Driver_BuildFrame(uint8_t* out, uint8_t pa, uint8_t rw, uint8_
 	L9963_Driver_FrameSwitchEndianess((uint8_t*)&frame.val, out);
 }
 
-static uint8_t L9963_Driver_ComputeCRC(uint64_t InputWord) {
+uint8_t L9963_Driver_ComputeCRC(uint64_t InputWord) {
 	uint64_t TestBitMask;
 	uint64_t CRCMask;
 	uint8_t BitCount;
